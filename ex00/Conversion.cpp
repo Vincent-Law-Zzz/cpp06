@@ -19,9 +19,21 @@ int		Conversion::isLiteral(char *arg)
 
 Conversion::Conversion(char *arg) : _arg(arg), _printable(false), _num(false)
 {
+	double num_i = 0;
+	try{
+		num_i = std::stod(_arg);
+	}
+	catch (std::out_of_range){
+		std::cout << "char :" << " " <<"impossible" <<std::endl;
+		std::cout << "int :" << " " << "impossible" << std::endl;
+		std::cout << "float :" << " " << "impossible" << std::endl;
+		std::cout << "double :" << " " << "impossible" << std::endl;
+		exit(0) ;
+	}
+	catch (std::invalid_argument){}
 	if (isNum(_arg))
 		setNum();
-	if (_num && isPrintable(static_cast<char>(std::stod(_arg))))
+	if (_num && isPrintable(static_cast<char>(num_i)))
 		setPrintable();
 	setLit(isLiteral(_arg));
 
@@ -137,10 +149,14 @@ std::ostream &operator<<(std::ostream &oper, const Conversion& info)
 		char str = static_cast<int>(std::stod(info.getArg()));
 		oper << "char :" << " \'" << str << "\'" <<std::endl;
 	}
-	else if (info.getLit())
-		oper << "char :" << " " << "impossible" <<std::endl;
 	else
-		oper << "char :" << " " <<"Non displayable" <<std::endl;
+	{
+		std::string strw = info.getArg();
+		if (info.getNum() && strw.length() < 11)
+			oper << "char :" << " " <<"Non displayable" <<std::endl;
+		else
+			oper << "char :" << " " << "impossible" <<std::endl;
+	}
 	if (info.getLit())
 	{
 		std::string str = info.getArg();
@@ -152,12 +168,16 @@ std::ostream &operator<<(std::ostream &oper, const Conversion& info)
 	}
 	if (info.getNum())
 	{
+		double num = std::stod(info.getArg());
+		if ((num < -2147483648) || (num > 2147483647))
+			oper << "int :" << " " << "impossible" << std::endl;
+		else
+			oper << "int :" << " " << (static_cast<int>(std::atoi(info.getArg()))) << std::endl;
 		bool isZero = (static_cast<float>(std::stod(info.getArg()) - static_cast<int>(std::stod(info.getArg())) == 0) ? true : false);
-		oper << "int :" << " " << (static_cast<int>(std::atoi(info.getArg()))) << std::endl;
 		oper << "float :" << " " << (static_cast<float>(std::stod(info.getArg()))) <<  ((isZero) ? ".0f" : "f") ;
 		oper << std::endl;
-		oper << "double :" << " " << (static_cast<double>(std::stod(info.getArg()))) <<  ((isZero) ? ".0": " ") ;
-	}
+		oper << "double :" << " " << (static_cast<double>(std::stod(info.getArg()))) <<  ((isZero) ? ".0": "") ;
+	}	
 	return oper;
 }
 
